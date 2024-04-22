@@ -26,7 +26,7 @@ parser.add_argument('classifier', metavar='c', type=int, help='Escolha um classi
 parent_dir = "path_for_results"
 datasets_dir = "../FlexConC/datasets"
 datasets = sorted(os.listdir(datasets_dir))
-init_labelled = [0.03, 0.05, 0.08, 0.10, 0.13, 0.15, 0.18, 0.20, 0.23, 0.25]
+init_labelled = [0.03, 0.05, 0.08, 0.1, 0.13, 0.15, 0.18, 0.2, 0.23, 0.25]
 
 args = parser.parse_args()
 
@@ -119,8 +119,17 @@ for threshold in thresholds:
                             if(fold == 1):
                                 fold += 1
                             y = ut.select_labels(y_train, X_train, labelled_instances)
-                            for i in ut.list_knn:
-                                comite.add_classifier(i)
+                            
+                            if dataset == 'Seeds.csv':
+                                for i in ut.list_knn_seeds:
+                                    comite.add_classifier(i)
+                            elif dataset == 'PlanningRelax.csv':
+                                for i in ut.list_knn_Prelax:
+                                    comite.add_classifier(i)
+                            else:
+                                for i in ut.list_knn_full:
+                                    comite.add_classifier(i)
+
                             comite.fit_ensemble(X_train, y)
 
                         elif args.classifier == 4:
@@ -131,8 +140,17 @@ for threshold in thresholds:
                                 comite.add_classifier(Naive(var_smoothing=float(f'1e-{i}')))
                             for i in ut.list_tree:
                                 comite.add_classifier(i)
-                            for i in ut.list_knn:
-                                comite.add_classifier(i)
+                            
+                            if dataset == 'Seeds.csv':
+                                for i in ut.list_knn_seeds:
+                                    comite.add_classifier(i)
+                            elif dataset == 'PlanningRelax.csv':
+                                for i in ut.list_knn_Prelax:
+                                    comite.add_classifier(i)
+                            else:
+                                for i in ut.list_knn_full:
+                                    comite.add_classifier(i)
+
                             comite.fit_ensemble(X_train, y)
 
                         y_pred = comite.predict(X_test)

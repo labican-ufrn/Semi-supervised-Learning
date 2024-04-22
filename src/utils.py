@@ -29,7 +29,21 @@ list_tree = [
     Tree(max_features='sqrt', splitter="random"),
     Tree(max_features=None, splitter="random")]
 
-list_knn= [
+list_knn_Prelax = [
+    KNN(n_neighbors=4, weights='distance'),KNN(n_neighbors=4),
+    KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5),
+    KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5),
+    KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5),
+    KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5)]
+
+list_knn_seeds = [
+    KNN(n_neighbors=4, weights='distance'),KNN(n_neighbors=4),
+    KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5),
+    KNN(n_neighbors=6, weights='distance'),KNN(n_neighbors=6),
+    KNN(n_neighbors=6, weights='distance'),KNN(n_neighbors=6),
+    KNN(n_neighbors=6, weights='distance'),KNN(n_neighbors=6)]
+
+list_knn_full = [
     KNN(n_neighbors=4, weights='distance'),KNN(n_neighbors=4),
     KNN(n_neighbors=5, weights='distance'),KNN(n_neighbors=5),
     KNN(n_neighbors=6, weights='distance'),KNN(n_neighbors=6),
