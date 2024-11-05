@@ -16,15 +16,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Converte y_train para float para aceitar NaN
 y_train = y_train.astype(float)
 
-# Simula dados não rotulados (50% dos rótulos como NaN no conjunto de treino)
+# Simula dados não rotulados (30% dos rótulos como NaN no conjunto de treino)
 rng = np.random.default_rng(42)
-num_unlabeled = int(0.5 * len(y_train))
+num_unlabeled = int(0.3 * len(y_train))
 unlabeled_indices = rng.choice(len(y_train), num_unlabeled, replace=False)
 y_train[unlabeled_indices] = np.nan
 
 # Instancia e treina o modelo SelfTrainingClassifier com classificador DecisionTreeClassifier
 base_classifier = DecisionTreeClassifier(random_state=42)
-self_training_model = SelfTrainingClassifier(base_classifier, confidence_threshold=0.95, max_iter=10)
+self_training_model = SelfTrainingClassifier(base_classifier=base_classifier, threshold=0.95, max_iter=10, criterion="threshold")
 self_training_model.fit(X_train, y_train)
 
 # Faz as previsões no conjunto de teste

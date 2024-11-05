@@ -4,9 +4,18 @@ from sklearn.exceptions import NotFittedError
 import numpy as np
 
 class SelfTrainingClassifier:
-    def __init__(self, base_classifier, confidence_threshold=0.75, max_iter=10):
+    def __init__(
+        self,
+        base_classifier,
+        criterion="threshold",
+        threshold=0.75,
+        k_best=10,
+        max_iter=10,
+    ):
         self.base_classifier = base_classifier
-        self.confidence_threshold = confidence_threshold
+        self.criterion = criterion
+        self.threshold = threshold
+        self.k_best = k_best
         self.max_iter = max_iter
         self.classifier_ = None
 
@@ -33,7 +42,18 @@ class SelfTrainingClassifier:
                 
                 # Seleciona instâncias com alta confiança
                 max_probs = probs.max(axis=1)
-                confident_samples = max_probs >= self.confidence_threshold
+                if self.criterion == "threshold":
+                    confident_samples = max_probs >= self.threshold
+                elif self.criterion == "k_best":
+                    n_to_select = min(self.k_best, max_probs.shape[0])
+                    if n_to_select == 0:
+                        break
+                    confident_samples_indices = np.argpartition(-max_probs, n_to_select)[:n_to_select]
+                    confident_samples = np.zeros_like(max_probs, dtype=bool)
+                    confident_samples[confident_samples_indices] = True
+                else:
+                    raise ValueError("Invalid criterion. Choose either 'threshold' or 'k_best'.")
+                
                 if not np.any(confident_samples):
                     break  # Para se não houver instâncias confiantes
 
