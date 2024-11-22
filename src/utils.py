@@ -2,19 +2,14 @@ from nis import match
 from statistics import mean, stdev
 
 import numpy as np
-# from ipdb import set_trace
+from ipdb import set_trace
 from sklearn.metrics import accuracy_score, f1_score
 
-# from pushbullet.pushbullet import PushBullet
 from sklearn.model_selection import StratifiedKFold
 from sklearn.naive_bayes import GaussianNB as Naive
 from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.tree import DecisionTreeClassifier as Tree
 
-# CONEXÃO COM PUSHBULLET
-# apiKey = "o.uV6lySsrOlDbTyo0OJg9Jzh6SOZcWCTz"
-# p = PushBullet(apiKey)
-# devices = p.getDevices()
 
 # LISTA DE CLASSIFICADORES
 list_tree = [
@@ -74,7 +69,7 @@ def select_labels(y_train, X_train, labelled_instances):
     Returns:
         Retorna o array de classes com base nos rótulos das instâncias selecionadas
     """
-    # set_trace()
+    set_trace()
     count = 0
     labels = np.unique(y_train)
     if -1 in labels:
@@ -82,7 +77,11 @@ def select_labels(y_train, X_train, labelled_instances):
     while count != len(labels):
         count = 0
         instances = []
-        random_unlabeled_points = np.random.choice(len(X_train), labelled_instances, replace=False)
+        random_unlabeled_points = np.random.choice(
+            len(X_train),
+            int(len(X_train) * labelled_instances),
+            replace=False
+        )
         for instance in random_unlabeled_points:
             instances.append(y_train[instance])
         for label in labels:

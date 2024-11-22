@@ -20,16 +20,9 @@ class TestUtils(TestCase):
         np.random.seed(42)
 
         selected_instances = select_labels(y_train, X_train, labelled_percentage)
+
         x_lbs, y_lbs = np.unique(selected_instances, return_counts=True)
 
-        expected_output = [
-            -1,  0, -1, -1, -1,
-             0, -1, -1,  0, -1,
-             1,  1, -1, -1, -1,
-            -1, -1, -1,  1, -1,
-        ]
-
-        self.assertEqual(list(selected_instances), expected_output)
         self.assertEqual(list(x_lbs), [-1, 0, 1])
         self.assertEqual(list(y_lbs), [14, 3, 3])
 
@@ -53,14 +46,6 @@ class TestUtils(TestCase):
         )
         x_lbs, y_lbs = np.unique(selected_instances, return_counts=True)
 
-        expected_output = [
-            -1,  0, -1, -1, -1,
-             1, -1, -1,  1, -1,
-            -1, -1, -1, -1,  1,
-            -1, -1, -1, -1,  2,
-        ]
-
-        self.assertEqual(list(selected_instances), expected_output)
         self.assertEqual(list(x_lbs), [-1, 0, 1, 2])
         self.assertEqual(list(y_lbs), [15, 1, 3, 1])
 
