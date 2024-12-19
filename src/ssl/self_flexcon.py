@@ -5,6 +5,12 @@ from src.ssl.flexcon import BaseFlexConC
 
 
 class SelfFlexCon(BaseFlexConC):
+    """
+    _summary_
+
+    Args:
+        base_estimator (_type_): _description_
+    """
     def __init__(self, base_estimator, **kwargs):
         super().__init__(
             base_estimator=base_estimator,
@@ -54,7 +60,7 @@ class SelfFlexCon(BaseFlexConC):
                 " as the label for unlabeled samples."
             )
 
-        has_label = y != -1
+        has_label: list = y != -1
         self.size_y = len(y)
         self.cl_memory = [[0] * np.unique(y[has_label]) for _ in range(len(X))]
 
@@ -94,7 +100,8 @@ class SelfFlexCon(BaseFlexConC):
                     selected_full, pred_full = self.select_instances_by_rules()
                 selected = [pseudo_ids.index(inst) for inst in selected_full]
                 pred[selected] = pred_full
-                # WIP - transformar o selected num vetor bool do tamanho da predição (pred)
+                # WIP - transformar o selected num vetor bool do
+                # tamanho da predição (pred)
                 # Assim, é possível fazer as operações
             else:
                 self.dict_first = self.storage_predict(
@@ -117,7 +124,10 @@ class SelfFlexCon(BaseFlexConC):
                     selected_full = np.array(
                         old_selected + selected_full.tolist()
                     )
-                    new_pred = np.concatenate((self.transduction_[old_selected], pred[selected]))
+                    new_pred = np.concatenate((
+                        self.transduction_[old_selected],
+                        pred[selected]
+                    ))
                     self.base_estimator_select_.fit(X[selected_full], new_pred)
                     old_selected = []
                 else:

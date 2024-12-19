@@ -1,8 +1,6 @@
 import argparse
 import os
 import warnings
-from os import listdir
-from os.path import isfile, join
 from random import seed
 
 import pandas as pd
@@ -15,7 +13,6 @@ import src.utils as ut
 from src.ssl.ensemble import Ensemble
 from src.ssl.self_flexcon import SelfFlexCon
 
-
 crs = [0.05]
 thresholds = [0.95]
 
@@ -25,7 +22,8 @@ parser = argparse.ArgumentParser(description="Escolha um classificador para cria
 parser.add_argument('classifier', metavar='c', type=int, help='Escolha um classificador para criar um cômite. Opções: 1 - Naive Bayes, 2 - Tree Decision, 3 - Knn, 4 - Heterogeneous')
 parent_dir = "path_for_results"
 datasets_dir = "../FlexConC/datasets"
-datasets = sorted(os.listdir(datasets_dir))
+# datasets = sorted(os.listdir(datasets_dir))
+datasets = ['Car.csv']
 init_labelled = [0.03, 0.05, 0.08, 0.1, 0.13, 0.15, 0.18, 0.2, 0.23, 0.25]
 
 args = parser.parse_args()
@@ -35,11 +33,11 @@ fold_result_f1_score_final = []
 
 
 for threshold in thresholds:
-    
+
     comite = "Comite_Naive_" if args.classifier == 1 else "Comite_Tree_" if args.classifier == 2 else 'Comite_KNN_' if args.classifier == 3 else "Comite_Heterogeneo_"
 
     path = os.path.join(parent_dir)
-    
+
     folder_check_csv = f'path_for_results'
     os.makedirs(folder_check_csv, exist_ok=True)
 
@@ -83,7 +81,7 @@ for threshold in thresholds:
                 for train, test in kfold.split(_instances, _target_unlabelled):
                     X_train, X_test = _instances[train], _instances[test]
                     y_train, y_test = _target_unlabelled[train], _target_unlabelled[test]
-                    labelled_instances = round(len(X_train)*labelled_level)
+                    labelled_instances = labelled_level
 
                     rounds += 1
 
@@ -119,7 +117,7 @@ for threshold in thresholds:
                             if(fold == 1):
                                 fold += 1
                             y = ut.select_labels(y_train, X_train, labelled_instances)
-                            
+
                             if dataset == 'Seeds.csv':
                                 for i in ut.list_knn_seeds:
                                     comite.add_classifier(i)
@@ -140,7 +138,7 @@ for threshold in thresholds:
                                 comite.add_classifier(Naive(var_smoothing=float(f'1e-{i}')))
                             for i in ut.list_tree:
                                 comite.add_classifier(i)
-                            
+
                             if dataset == 'Seeds.csv':
                                 for i in ut.list_knn_seeds:
                                     comite.add_classifier(i)
@@ -154,7 +152,7 @@ for threshold in thresholds:
                             comite.fit_ensemble(X_train, y)
 
                         y_pred = comite.predict(X_test)
-                        
+
                         result_acc = round(accuracy_score(y_test, y_pred) * 100, 4)
 
                         # Adds new accuracy to fold_result_acc
@@ -173,12 +171,12 @@ for threshold in thresholds:
                             labelled_level,
                             rounds
                             )
-                        
+
                         fold_result_f1_score.append(result_f1)
 
                         fold_result_f1_score_final.append(result_f1)
 
-                ut.calculateMeanStdev(
+                ut.calculate_mean_stdev(
                     fold_result_acc,
                     args.classifier,
                     labelled_level,
@@ -187,7 +185,7 @@ for threshold in thresholds:
                     fold_result_f1_score
                 )
 
-ut.calculateMeanStdev(
+ut.calculate_mean_stdev(
     fold_result_acc_final,
     args.classifier,
     labelled_level,

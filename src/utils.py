@@ -1,15 +1,9 @@
-from nis import match
 from statistics import mean, stdev
 
 import numpy as np
-from ipdb import set_trace
 from sklearn.metrics import accuracy_score, f1_score
-
-from sklearn.model_selection import StratifiedKFold
-from sklearn.naive_bayes import GaussianNB as Naive
 from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.tree import DecisionTreeClassifier as Tree
-
 
 # LISTA DE CLASSIFICADORES
 list_tree = [
@@ -51,43 +45,34 @@ def validate_estimator(estimator):
         msg = "base_estimator ({}) should implement predict_proba!"
         raise ValueError(msg.format(type(estimator).__name__))
 
-def cross_validation(k):
-    try:
-        return StratifiedKFold(n_splits=k)
-    except ValueError:
-        print("Please put a number > 2")
-
-def select_labels(y_train, X_train, labelled_instances):
+def select_labels(y_train, X_train, labelled_percentage):
     """
     Responsável por converter o array de rótulos das instâncias com base
-    nas instâncias selecionadas randomicamente
+    nas instâncias selecionadas randomicamente.
+
     Args:
-        y_train (Array): Classes usadas no treinamento
-        X_train (Array): Instâncias
-        labelled_instances (Array): Quantidade de instâncias rotuladas
+        - y_train (Array): Classes usadas no treinamento
+        - X_train (Array): Instâncias
+        - labelled_percentage (float): % de instâncias que ficarão com o
+            rótulo.
 
     Returns:
-        Retorna o array de classes com base nos rótulos das instâncias selecionadas
+        Retorna o array de classes com base nos rótulos das instância
+        selecionadas.
     """
-    set_trace()
-    count = 0
-    labels = np.unique(y_train)
-    if -1 in labels:
-        labels = list(filter(lambda result: result != -1, labels))
-    while count != len(labels):
-        count = 0
-        instances = []
-        random_unlabeled_points = np.random.choice(
-            len(X_train),
-            int(len(X_train) * labelled_instances),
+    class_dist = np.bincount(y_train)
+    min_acceptable = np.trunc(class_dist * labelled_percentage)
+    instances = []
+
+    for lab, cls_dist in enumerate(min_acceptable):
+        instances += np.random.choice(
+            np.where(y_train == lab)[0],
+            int(cls_dist) or 1,
             replace=False
-        )
-        for instance in random_unlabeled_points:
-            instances.append(y_train[instance])
-        for label in labels:
-            if label in instances: count += 1
+        ).tolist()
+
     mask = np.ones(len(X_train), bool)
-    mask[random_unlabeled_points] = 0
+    mask[instances] = 0
     y_train[mask] = -1
     return y_train
 
@@ -104,10 +89,8 @@ def result(option, dataset, y_test, y_pred, path, labelled_level, rounds):
     """
     acc = round(accuracy_score(y_test, y_pred) * 100, 4)
     f1 = round(f1_score(y_test, y_pred, average="macro") * 100, 4)
-    rounds = rounds
     if option == 1:
-        print(f'Salvando os resultados em arquivos Comite_Naive_{round(labelled_level, 4) * 100} ({dataset}).csv\n\n')
-        with open(f'{path}/Comite_Naive_.csv', 'a') as f:
+        with open(f'{path}/Comite_Naive_.csv', 'a', encoding='utf=8') as f:
             f.write(
                 #ROUNDS
                 f'\n{rounds},'
@@ -119,15 +102,12 @@ def result(option, dataset, y_test, y_pred, path, labelled_level, rounds):
                 f'{acc},'
                 #F1-Score
                 f'{f1}'
-                # f"Motivo da finalização: {comite.ensemble[0].termination_condition_}\n"
-                # f"Valor do teste estatístico é de {alpha}, significante? {alpha <= 0.05}\n"
             )
             f1 = f1_score(y_test, y_pred, average="macro") * 100
         return f1
 
-    elif option == 2:
-        print(f'Salvando os resultados em arquivos Comite_Tree_{round(labelled_level, 4) * 100} ({dataset}).csv\n\n')        
-        with open(f'{path}/Comite_Tree_.csv', 'a') as f:
+    if option == 2:
+        with open(f'{path}/Comite_Tree_.csv', 'a', encoding='utf=8') as f:
             f.write(
                 #ROUNDS
                 f'\n{rounds},'
@@ -139,15 +119,12 @@ def result(option, dataset, y_test, y_pred, path, labelled_level, rounds):
                 f'{acc},'
                 #F1-Score
                 f'{f1}'
-                # f"Motivo da finalização: {comite.ensemble[0].termination_condition_}\n"
-                # f"Valor do teste estatístico é de {alpha}, significante? {alpha <= 0.05}\n"
             )
             f1 = f1_score(y_test, y_pred, average="macro") * 100
         return f1
 
-    elif option == 3:
-        print(f'Salvando os resultados em arquivos Comite_KNN_{round(labelled_level, 4) * 100} ({dataset}).csv\n\n')
-        with open(f'{path}/Comite_KNN_.csv', 'a') as f:
+    if option == 3:
+        with open(f'{path}/Comite_KNN_.csv', 'a', encoding='utf=8') as f:
             f.write(
                 #ROUNDS
                 f'\n{rounds},'
@@ -159,39 +136,51 @@ def result(option, dataset, y_test, y_pred, path, labelled_level, rounds):
                 f'{acc},'
                 #F1-Score
                 f'{f1}'
-                # f"Motivo da finalização: {comite.ensemble[0].termination_condition_}\n"
-                # f"Valor do teste estatístico é de {alpha}, significante? {alpha <= 0.05}\n"
             )
             f1 = f1_score(y_test, y_pred, average="macro") * 100
         return f1
 
-    elif option == 4:
-        print(f'Salvando os resultados em arquivos Comite_Heterogeneo_{round(labelled_level, 4) * 100} ({dataset}).csv\n\n')
-        with open(f'{path}/Comite_Heterogeneo_.csv', 'a') as f:
-            f.write(
-                #ROUNDS
-                f'\n{rounds},'
-                # DATASET
-                f'"{dataset}",'
-                # LABELLED-LEVEL
-                f'{labelled_level},'
-                #ACC
-                f'{acc},'
-                #F1-Score
-                f'{f1}'
-                # f"Motivo da finalização: {comite.ensemble[0].termination_condition_}\n"
-                # f"Valor do teste estatístico é de {alpha}, significante? {alpha <= 0.05}\n"
-            )
-            f1 = f1_score(y_test, y_pred, average="macro") * 100
-        return f1
+    with open(f'{path}/Comite_Heterogeneo_.csv', 'a', encoding='utf=8') as f:
+        f.write(
+            #ROUNDS
+            f'\n{rounds},'
+            # DATASET
+            f'"{dataset}",'
+            # LABELLED-LEVEL
+            f'{labelled_level},'
+            #ACC
+            f'{acc},'
+            #F1-Score
+            f'{f1}'
+        )
+        f1 = f1_score(y_test, y_pred, average="macro") * 100
+    return f1
 
-def calculateMeanStdev(fold_result_acc, option, labelled_level, path, dataset, fold_result_f1_score):
+def calculate_mean_stdev(
+    fold_result_acc,
+    option,
+    labelled_level,
+    path,
+    dataset,
+    fold_result_f1_score
+):
+    """
+    Calcula a média de acc e f1_score dependendo do comitê
+
+    Args:
+        fold_result_acc (_type_): _description_
+        option (_type_): _description_
+        labelled_level (_type_): _description_
+        path (_type_): _description_
+        dataset (_type_): _description_
+        fold_result_f1_score (_type_): _description_
+    """
     acc_average = round(mean(fold_result_acc), 4)
     standard_deviation_acc = round(stdev(fold_result_acc), 4)
     f1_average = round(mean(fold_result_f1_score), 4)
     standard_deviation_f1 = round(stdev(fold_result_f1_score), 4)
     if option == 1:
-        with open(f'{path}/Comite_Naive_F.csv', 'a') as f:
+        with open(f'{path}/Comite_Naive_F.csv', 'a', encoding='utf=8') as f:
             f.write(
                 # DATASET
                 f'\n"{dataset}",'
@@ -223,7 +212,7 @@ def calculateMeanStdev(fold_result_acc, option, labelled_level, path, dataset, f
                 f'{standard_deviation_f1}'
             )
     elif option == 3:
-        with open(f'{path}/Comite_KNN_F.csv', 'a') as f:
+        with open(f'{path}/Comite_KNN_F.csv', 'a', encoding='utf-8') as f:
             f.write(
                 # DATASET
                 f'\n"{dataset}",'
@@ -239,7 +228,9 @@ def calculateMeanStdev(fold_result_acc, option, labelled_level, path, dataset, f
                 f'{standard_deviation_f1}'
             )
     elif option == 4:
-        with open(f'{path}/Comite_Heterogeneo_F.csv', 'a') as f:
+        with open(
+            f'{path}/Comite_Heterogeneo_F.csv', 'a', encoding='utf-8'
+        ) as f:
             f.write(
                 # DATASET
                 f'\n"{dataset}",'

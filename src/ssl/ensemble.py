@@ -2,8 +2,6 @@ from statistics import mode
 
 import numpy as np
 
-from src.ssl import flexcon
-
 
 class Ensemble:
     """

@@ -41,13 +41,12 @@ class BaseFlexConC(SelfTrainingClassifier):
     def fit(self, X, y):
         ...
 
-    def get_atributs(self):
-        return self.cr, self.threshold
-
     def validate(self):
-        # Validate the fitted estimator since `predict_proba` can be
-        # delegated to an underlying "final" fitted estimator as
-        # generally done in meta-estimator or pipeline.
+        """
+            Validate the fitted estimator since `predict_proba` can be
+            delegated to an underlying "final" fitted estimator as
+            generally done in meta-estimator or pipeline.
+        """
         try:
             validate_estimator(self.base_estimator)
         except ValueError:
@@ -55,7 +54,7 @@ class BaseFlexConC(SelfTrainingClassifier):
         return True
 
     def calc_local_measure(self, X, y_true, classifier):
-        """
+        """ge
         Calcula o valor da acurácia do modelo
 
         Args:
